@@ -1,0 +1,51 @@
+# This workflow builds a Java project using Apache Ant.
+# For more information, see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-ant
+
+name: Java CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin' # Use Temurin distribution for better performance and support
+
+      - name: Build with Ant
+        run: |
+          echo "Starting build process with Ant..."
+          ant -noinput -buildfile build.xml
+          echo "Build completed successfully."
+
+      - name: Run Unit Tests
+        run: |
+          echo "Running unit tests..."
+          ant test # Assuming your Ant build file has a target for running tests
+          echo "Unit tests completed."
+
+      - name: Check for Build Artifacts
+        run: |
+          echo "Checking for generated artifacts..."
+          if [ -f "target/my-artifact.jar" ]; then
+            echo "Artifact found: target/my-artifact.jar"
+          else
+            echo "No artifact found. Build may have failed."
+            exit 1
+          fi
+
+      - name: Notify Build Status
+        if: failure()
+        run: |
+          echo "Build failed. Please check the logs for details."
